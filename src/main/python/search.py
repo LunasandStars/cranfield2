@@ -123,6 +123,20 @@ def term_freq(token, doc_id):
 def document_query_pair_score(query):
     return 0
 
+
+def rank_results(query):
+    notranked = merge_postings(query)
+    ranked = {}
+    for document in notranked:
+        score = 0
+        for token in query:
+            if document.id in inverted_index[token]:
+                score += calculate_idf[token]
+        ranked.update({document.id : score})
+    sorted_ranked = ranked.sort(score)
+    return sorted_ranked
+
+
 # This function sorts the inverted index in descending frequency
 # https://programminghistorian.org/lessons/counting-frequencies
 def sort_inverted_index():
