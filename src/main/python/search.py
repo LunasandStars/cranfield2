@@ -3,6 +3,9 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.corpus import wordnet
 import math
+from PyDictionary import PyDictionary
+dictionary = PyDictionary()
+from nltk.stem import *   #From nltk.org
 
 
 from readers import read_queries, read_documents
@@ -61,13 +64,31 @@ def search_query(query):
     else:
         return merge_postings(indexed_tokens)
 
+def synonyms(text):
+    synonyms = []
+    list_of_syn = dictionary.synonym("good")
+    for syn in wordnet.synsets(list_of_syn):
+        for text in syn.lemmas():
+            synonyms.append(text.name())
+    return set(synonyms)
 
 def tokenize(text):
     stopWords = set(stopwords.words('english'))
-    #return [w for w in re.split("-|\s|,|\.", text) if not in stopwords]
-    return [term for term in re.split("-|\s|,|\.", text) if not term in stopWords]  # Stop words split by hyphens or make an array list
-
-    # return text.split(" ")
+    stemmer = SnowballStemmer("english", ignore_stopwords = True)  # from nltk.org
+    tokensplit = re.split("-|\s|,|\.", text)
+    #specialchar = re.split(r'[`\-=~!@#$%^&*()_+\[\]{};\'\\:"|<,./<>?]', text)
+    stemlist = []
+    for term in tokensplit:
+        if term not in stopWords:
+            stemlist.append(stemmer.stem(term))
+    #synonyms = wordnet.synsets('heat')[0]
+    #synonyms.definition()
+    specialchar = re.split(r'[`\-=~!@#$%^&*()_+\[\]{};\'\\:"|<,./<>?]', text)
+    #https: // stackoverflow.com / questions / 21023901 / how - to - split - at - all - special - characters - with-re - split
+    #return [term for term in specialchar if not term in stopWords]  # Stop words split by hyphens or make an array list
+    #https://stackoverflow.com/questions/5486337/how-to-remove-stop-words-using-nltk-or-python
+    #return [term for term in re.split("-|\s|,|\.|\ing", text) if not term in stopWords]  # Stop words split by hyphens or make an array list
+    return stemlist
 
 #log termfrequency * (log (n) / idf)
 
@@ -77,23 +98,7 @@ def tokenize(text):
 
 # Have this function to do term frequency (per documents) and IDF (All documents)
 # Term Frequency - Count terms in the document
-'''
-def add_token_to_index(token, doc_id):
-    # add count for number of document ids in current postings
-    # make sure when the document id is not in the invert index at that key to increment one
-    #inverted_index[token][doc_id] = {}
-    count = 0
-    if token in inverted_index:
-    #inverted_index[token][doc_id] = {}
-        current_postings = inverted_index[token]    # updating list of postings (List of document ids)
-        #inverted_index[token][doc_id] += 1
-        if doc_id not in current_postings:    # If it is already in the list do nothing (helps with dupes)
-            current_postings.append(doc_id)
-            inverted_index[token] = current_postings
-    else:
-        inverted_index[token] = [doc_id]    # creating the list of postings, [] means list
-        #inverted_index[token][doc_id] = 1
-'''
+
 
 def add_token_to_index(token, doc_id):
     # check if token in inverted ind
@@ -115,6 +120,17 @@ def term_freq(token, doc_id):
         if doc_id in inverted_index[token]:
             return inverted_index[token][doc_id]
 
+def document_query_pair_score(query):
+    return 0
+
+# This function sorts the inverted index in descending frequency
+# https://programminghistorian.org/lessons/counting-frequencies
+def sort_inverted_index():
+    list = [(inverted_index[token], token) for token in inverted_index]
+    list.sort()
+    list.reverse()
+    return list
+
     #What if the token or doc id isn't there
 
 def sum_of_tf_idf(token, doc_id):
@@ -133,9 +149,10 @@ def calculate_dcg(query, documents):
     return sum
 
 def length_normalize(): #This will take vector
-    for token in inverted_index
+    for token in inverted_index:
         sum_of_vectors = (inverted_index)
     length_of_vector = math.sqrt()
+    return 0
 #Normalizing the length of a vector
 #Divide each of the components by its length
 
