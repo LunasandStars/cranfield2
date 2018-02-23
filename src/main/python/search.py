@@ -136,15 +136,15 @@ def sum_of_tf_idf(token, doc_id):
     return len(inverted_index[token][doc_id]) / float()
 
 def rank_results(query):
-    notranked = merge_postings(query)
-    ranked = {}
-    for document in notranked:
+    notranked = merge_postings(query)  # applies mergepostings and this will be a list
+    ranked = {}     # This creates a new dictionary
+    for document in notranked:  #For every document in the notranked list
         score = 0
-        for token in query:
-            if document.id in inverted_index[token]:
-                score += calculate_idf[token]
-        ranked.update({document.id : score})
-    sorted_ranked = ranked.sort(score)
+        for token in query:     #For every token in the query
+            if document.id in inverted_index[token]:    #If the doc_id in the inverted index at that token
+                score += calculate_idf[token]      #Add up the idf score for that token
+        ranked.update({document.id : score})    #Updates the ranked dictionary
+    sorted_ranked = ranked.sort(score)      #Sorts the score
     return sorted_ranked
 
 
@@ -186,14 +186,14 @@ def length_normalize(): #This will take vector
 #Compute the Cos Sim Score for the document vector and query vector
 #Rank documents with respect to query by score
 #Return the top K to the user (Rank the document by the smallest angle)
-def cosine_similarity(query):
+def cosine_similarity(query, doc_id):
     #float scores[N] = 0 # score array for all documents for each query terms
     #float Length[N] = 0 # array for the different documents
-    for term in query:  # For each term in the query
-        current_postings = inverted_index[term]
-        for doc_id in inverted_index:
-            score += term_freq(token, doc_id) * calculate_idf(token)
-    norm = score / len(inverted_index)
+    cosine = 0.0
+    for token in query:  # For each term in the query
+        if token in inverted_index:
+            cosine += calculate_idf(token) * term_freq(token, doc_id)
+    cosine = cosine / len(doc_id)
     #Sort the documents
         # Calculate the query term and fetch postings list for that query
         # For each document in the postings list each term has a frequency in that document (scale by log)
@@ -201,9 +201,8 @@ def cosine_similarity(query):
     #Length of each document for each document
     #Divide the score array of each document = Scores[d]/Length[d] (Normalization of the different document
     #Return top K components of Scores (high values for scores)
-
     #dp = dot_product(first, second)
-    return 0 
+    return cosine
 
 
 
