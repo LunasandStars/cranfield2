@@ -24,6 +24,7 @@ def remove_not_indexed_toknes(tokens):
 #   else go to the next index posting in the second posting.
 #   This will return the merged list
 def merge_two_postings(first, second):
+    #https: // stackoverflow.com / questions / 1319338 / combining - two - lists - and -removing - duplicates - without - removing - duplicates - in -orig
     setlist = set(second) - set(first)
     return first + list(setlist) #This changes it into an OR instead of an AND
     """
