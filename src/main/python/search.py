@@ -24,8 +24,8 @@ def remove_not_indexed_toknes(tokens):
 #   else go to the next index posting in the second posting.
 #   This will return the merged list
 def merge_two_postings(first, second):
-    setlist = set(first + second)
-    return list(setlist) #This changes it into an OR instead of an AND
+    setlist = set(second) - set(first)
+    return first + list(setlist) #This changes it into an OR instead of an AND
     """
     first_index = 0
     second_index = 0
@@ -75,7 +75,7 @@ def synonyms(text):
 def tokenize(text):
     stopWords = set(stopwords.words('english'))
     stemmer = SnowballStemmer("english", ignore_stopwords = True)  # from nltk.org
-    tokensplit = re.split("-|\s|,|\.", text)
+    tokensplit = re.split("-|\s|,|\.|\(|\)", text)
     #specialchar = re.split(r'[`\-=~!@#$%^&*()_+\[\]{};\'\\:"|<,./<>?]', text)
     stemlist = []
     for term in tokensplit:
@@ -83,7 +83,7 @@ def tokenize(text):
             stemlist.append(stemmer.stem(term))
     #synonyms = wordnet.synsets('heat')[0]
     #synonyms.definition()
-    specialchar = re.split(r'[`\-=~!@#$%^&*()_+\[\]{};\'\\:"|<,./<>?]', text)
+    #specialchar = re.split(r'[`\-=~!@#$%^&*()_+\[\]{};\'\\:"|<,./<>?]', text)
     #https: // stackoverflow.com / questions / 21023901 / how - to - split - at - all - special - characters - with-re - split
     #return [term for term in specialchar if not term in stopWords]  # Stop words split by hyphens or make an array list
     #https://stackoverflow.com/questions/5486337/how-to-remove-stop-words-using-nltk-or-python
@@ -116,13 +116,23 @@ def calculate_idf(token):
     return idf
 
 def term_freq(token, doc_id):
-    if token in inverted_index:
-        if doc_id in inverted_index[token]:
-            return inverted_index[token][doc_id]
+            return inverted_index[token][doc_id].count(token.lower())
+
+def count_terms(token, doc_id):
+    return len(inverted_index[token])
 
 def document_query_pair_score(query):
     return 0
 
+def count_doc_with_term(token, doc_id):
+    count = 0
+    for inverted_index[token] in inverted_index[token][doc_id]:
+        if term_freq(token, inverted_index[token]) > 0:
+                count += 1
+    return count
+
+def sum_of_tf_idf(token, doc_id):
+    return len(inverted_index[token][doc_id]) / float()
 
 def rank_results(query):
     notranked = merge_postings(query)
@@ -147,8 +157,7 @@ def sort_inverted_index():
 
     #What if the token or doc id isn't there
 
-def sum_of_tf_idf(token, doc_id):
-    return sum(term_freq(token, doc_id) * calculate_idf(token))
+
 
 
 def calculate_dcg(query, documents):
