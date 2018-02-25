@@ -3,8 +3,6 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.corpus import wordnet
 import math
-from PyDictionary import PyDictionary
-dictionary = PyDictionary()
 from nltk.stem import *   #From nltk.org
 
 
@@ -63,7 +61,7 @@ def search_query(query):
     elif len(indexed_tokens) == 1:   # If there is only one
         return inverted_index[indexed_tokens[0]].keys()   # returning the posting list because there is only one element
     else:
-        return merge_postings(indexed_tokens)
+        return rank_results(indexed_tokens)
 
 def synonyms(text):
     synonyms = []
@@ -117,48 +115,37 @@ def calculate_idf(token):
     return idf
 
 def term_freq(token, doc_id):
-            return inverted_index[token][doc_id].count(token.lower())
+    return inverted_index[token][doc_id]  #returns the number of times the term occurs in the document with that key token
 
 def count_terms(token, doc_id):
     return len(inverted_index[token])
 
-def document_query_pair_score(query):
-    return 0
 
 def count_doc_with_term(token, doc_id):
     count = 0
     for inverted_index[token] in inverted_index[token][doc_id]:
         if term_freq(token, inverted_index[token]) > 0:
                 count += 1
+        else:
+                count = 0
     return count
 
-def sum_of_tf_idf(token, doc_id):
-    return len(inverted_index[token][doc_id]) / float()
 
 def rank_results(query):
-    notranked = merge_postings(query)  # applies mergepostings and this will be a list
+    notranked = merge_postings(query)  # applies mergepostings and this will be a list returning document ids
     ranked = {}     # This creates a new dictionary
-    for document in notranked:  #For every document in the notranked list
-        score = 0
-        for token in query:     #For every token in the query
-            if document.id in inverted_index[token]:    #If the doc_id in the inverted index at that token
-                score += calculate_idf[token]      #Add up the idf score for that token
-        ranked.update({document.id : score})    #Updates the ranked dictionary
-    sorted_ranked = ranked.sort(score)      #Sorts the score
+    for doc_id in notranked:  #For every document in the notranked list
+        score = probability_score(query, doc_id)
+        # for token in query:     #For every token in the query
+        #     if document.id in inverted_index[token]:    #If the doc_id in the inverted index at that token
+        #         score += calculate_idf[token]      #Add up the idf score for that token
+        ranked.update({doc_id : score})    #Updates the ranked dictionary
+    #https://stackoverflow.com/questions/613183/how-do-i-sort-a-dictionary-by-value
+    sorted_ranked = sorted(ranked, key=ranked.get, reverse=True)      #Sorts the score
     return sorted_ranked
 
 
-# This function sorts the inverted index in descending frequency
-# https://programminghistorian.org/lessons/counting-frequencies
-def sort_inverted_index():
-    list = [(inverted_index[token], token) for token in inverted_index]
-    list.sort()
-    list.reverse()
-    return list
-
-    #What if the token or doc id isn't there
-
-
+# What if the token or doc id isn't there
 
 
 def calculate_dcg(query, documents):
@@ -181,20 +168,13 @@ def length_normalize(): #This will take vector
 #Divide each of the components by its length
 
 
+
 #The query is represented as a weighted tf-idf vector
 #Each document as a weighted tf-idf vector
 #Compute the Cos Sim Score for the document vector and query vector
 #Rank documents with respect to query by score
 #Return the top K to the user (Rank the document by the smallest angle)
-def cosine_similarity(query, doc_id):
-    #float scores[N] = 0 # score array for all documents for each query terms
-    #float Length[N] = 0 # array for the different documents
-    cosine = 0.0
-    for token in query:  # For each term in the query
-        if token in inverted_index:
-            cosine += calculate_idf(token) * term_freq(token, doc_id)
-    cosine = cosine / len(doc_id)
-    #Sort the documents
+#Sort the documents
         # Calculate the query term and fetch postings list for that query
         # For each document in the postings list each term has a frequency in that document (scale by log)
         # Dot product of the query terms and summing to the scores array
@@ -202,7 +182,14 @@ def cosine_similarity(query, doc_id):
     #Divide the score array of each document = Scores[d]/Length[d] (Normalization of the different document
     #Return top K components of Scores (high values for scores)
     #dp = dot_product(first, second)
-    return cosine
+def probability_score(query, doc_id):
+    #float scores[N] = 0 # score array for all documents for each query terms
+    #float Length[N] = 0 # array for the different documents
+    score = 0.0
+    for token in query:  # For each term in the query
+        if doc_id in inverted_index[token]:
+            score += calculate_idf(token) * term_freq(token, doc_id) #Probability
+    return score
 
 
 
