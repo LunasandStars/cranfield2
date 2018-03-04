@@ -25,22 +25,7 @@ def merge_two_postings(first, second):
     #https: // stackoverflow.com / questions / 1319338 / combining - two - lists - and -removing - duplicates - without - removing - duplicates - in -orig
     setlist = set(second) - set(first)
     return first + list(setlist) #This changes it into an OR instead of an AND
-    """
-    first_index = 0
-    second_index = 0
-    merged_list = []
-    
-    while first_index < len(first) and second_index < len(second): # while both lists are within range
-        if first[first_index] == second[second_index]: # if they contain the same element ex: "2" = "2"
-            merged_list.append(first[first_index]) #add it to the list mergelist
-            first_index = first_index + 1  #increment one to first index
-            second_index = second_index + 1  #increment one to second index
-        elif first[first_index] < second[second_index]: #if the value first is less than second
-            first_index = first_index + 1 #increment one to first index
-        else:                               # if second is less then
-            second_index = second_index + 1  #increment one to second index
-    return merged_list       # this is a boolean search and remove duplicates
-    """
+
 
 # indexed_token is an array
 # inverted_index is a dictionary[key[postion in the array/list]]
@@ -62,14 +47,15 @@ def search_query(query):
         return inverted_index[indexed_tokens[0]].keys()   # returning the posting list because there is only one element
     else:
         return rank_results(indexed_tokens)
-
-def synonyms(text):
-    synonyms = []
-    list_of_syn = dictionary.synonym("good")
-    for syn in wordnet.synsets(list_of_syn):
-        for text in syn.lemmas():
-            synonyms.append(text.name())
-    return set(synonyms)
+    #
+    # def synonyms(text):
+    #     synonyms = []
+    #     from PyDictionary.test_pydictionary import dictionary
+    #     list_of_syn = dictionary.synonym("good")
+    #     for syn in wordnet.synsets(list_of_syn):
+    #         for text in syn.lemmas():
+    #             synonyms.append(text.name())
+    #     return set(synonyms)
 
 def tokenize(text):
     stopWords = set(stopwords.words('english'))
@@ -117,35 +103,17 @@ def calculate_idf(token):
 def term_freq(token, doc_id):
     return inverted_index[token][doc_id]  #returns the number of times the term occurs in the document with that key token
 
-def count_terms(token, doc_id):
-    return len(inverted_index[token])
 
-
-def count_doc_with_term(token, doc_id):
-    count = 0
-    for inverted_index[token] in inverted_index[token][doc_id]:
-        if term_freq(token, inverted_index[token]) > 0:
-                count += 1
-        else:
-                count = 0
-    return count
-
-
+#This function ranks the doc id by score from greatest to smallest
 def rank_results(query):
     notranked = merge_postings(query)  # applies mergepostings and this will be a list returning document ids
     ranked = {}     # This creates a new dictionary
     for doc_id in notranked:  #For every document in the notranked list
         score = probability_score(query, doc_id)
-        # for token in query:     #For every token in the query
-        #     if document.id in inverted_index[token]:    #If the doc_id in the inverted index at that token
-        #         score += calculate_idf[token]      #Add up the idf score for that token
         ranked.update({doc_id : score})    #Updates the ranked dictionary
     #https://stackoverflow.com/questions/613183/how-do-i-sort-a-dictionary-by-value
     sorted_ranked = sorted(ranked, key=ranked.get, reverse=True)      #Sorts the score
     return sorted_ranked
-
-
-# What if the token or doc id isn't there
 
 
 def calculate_dcg(query, documents):
@@ -159,11 +127,11 @@ def calculate_dcg(query, documents):
         count = count + 1
     return sum
 
-def length_normalize(): #This will take vector
-    for token in inverted_index:
-        sum_of_vectors = (inverted_index)
-    length_of_vector = math.sqrt()
-    return 0
+    # def length_normalize(): #This will take vector
+    #     for token in inverted_index:
+    #         sum_of_vectors = (inverted_index)
+    #     length_of_vector = math.sqrt()
+    #     return 0
 #Normalizing the length of a vector
 #Divide each of the components by its length
 
