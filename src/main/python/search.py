@@ -156,7 +156,8 @@ def probability_score(query, doc_id):
     score = 0.0
     for token in query:  # For each term in the query
         if doc_id in inverted_index[token]:
-            score += calculate_idf(token) * term_freq(token, doc_id) #Probability
+            # score += calculate_idf(token) * term_freq(token, doc_id) #Consine of Query
+            score += calculate_idf(token)  #Probability
     return score
 
 
